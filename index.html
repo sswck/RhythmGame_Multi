@@ -3,47 +3,135 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>RHYTHM MULTIPLAYER</title>
-        <!-- 1. CSS 파일 연결 -->
+        <title>NEON STRIKE — 3-LANE RHYTHM</title>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap"
+            rel="stylesheet"
+        />
+
         <link rel="stylesheet" href="css/style.css" />
     </head>
     <body>
-        <div class="shell">
-            <main class="app">
-                <header class="topbar">
-                    <h1>RHYTHM MULTIPLAYER</h1>
-                    <p class="subtitle">멀티플레이 리듬 게임</p>
-                </header>
+        <canvas id="star-canvas"></canvas>
 
-                <section class="hud" aria-label="게임 정보">
-                    <div><span>BPM</span><strong id="bpm">128</strong></div>
-                    <div><span>COMBO</span><strong id="combo">0</strong></div>
-                    <div><span>SCORE</span><strong id="score">0</strong></div>
-                    <div><span>ACCURACY</span><strong id="accuracy">100.00%</strong></div>
-                    <div><span>LIFE</span><strong id="life">100</strong></div>
-                </section>
-
-                <section class="game-wrap">
-                    <canvas id="stage" aria-label="리듬게임 스테이지"></canvas>
-                </section>
-
-                <section class="controls" aria-label="입력 버튼">
-                    <button id="startBtn" class="start-btn">START</button>
-                    <div class="key-guide" aria-label="입력 키 가이드">
-                        <span id="keyA" class="key-cap">A</span>
-                        <span id="keyS" class="key-cap">S</span>
-                        <span id="keyD" class="key-cap">D</span>
-                        <span id="keyF" class="key-cap">F</span>
-                        <span id="keyG" class="key-cap">G</span>
-                    </div>
-                </section>
-
-                <p id="message" class="message">START를 누르면 곡이 시작됩니다.</p>
-            </main>
+        <div id="countdown-overlay">
+            <div id="countdown-num">3</div>
         </div>
 
-        <!-- 2. JS 파일 연결 (순서 중요: 데이터가 로직보다 먼저 로드되어야 합니다) -->
+        <div id="result-overlay">
+            <div class="result-card">
+                <div class="result-grade" id="result-grade">A</div>
+                <div class="result-title" id="result-title">STAGE CLEAR</div>
+                <div class="judge-counts">
+                    <div class="jc perfect">
+                        <div class="jc-label">PERFECT</div>
+                        <div class="jc-count" id="res-perfect">0</div>
+                    </div>
+                    <div class="jc great">
+                        <div class="jc-label">GREAT</div>
+                        <div class="jc-count" id="res-great">0</div>
+                    </div>
+                    <div class="jc good">
+                        <div class="jc-label">GOOD</div>
+                        <div class="jc-count" id="res-good">0</div>
+                    </div>
+                    <div class="jc miss">
+                        <div class="jc-label">MISS</div>
+                        <div class="jc-count" id="res-miss">0</div>
+                    </div>
+                </div>
+                <div class="result-stats">
+                    <div class="result-stat">
+                        <div class="result-stat-label">SCORE</div>
+                        <div class="result-stat-val" id="res-score">0</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="result-stat-label">MAX COMBO</div>
+                        <div class="result-stat-val" id="res-combo">0</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="result-stat-label">ACCURACY</div>
+                        <div class="result-stat-val" id="res-acc">100%</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="result-stat-label">MULTIPLIER</div>
+                        <div class="result-stat-val" id="res-multi">x1.0</div>
+                    </div>
+                </div>
+                <button class="result-btn" id="result-restart-btn">PLAY AGAIN</button>
+            </div>
+        </div>
+
+        <div class="title-bar">
+            <div>
+                <div class="game-title">NEON STRIKE</div>
+                <div class="subtitle">3-LANE RHYTHM GAME</div>
+            </div>
+            <div style="text-align: right; font-size: 11px; color: rgba(100, 180, 255, 0.5); letter-spacing: 0.08em">
+                A&nbsp;·&nbsp;S&nbsp;·&nbsp;D&nbsp;&nbsp;|&nbsp;&nbsp;TAP
+            </div>
+        </div>
+
+        <section class="hud">
+            <div class="hud-cell">
+                <div class="hud-label">BPM</div>
+                <div class="hud-value" id="bpm">142</div>
+            </div>
+            <div class="hud-cell">
+                <div class="hud-label">COMBO</div>
+                <div class="hud-value" id="combo">0</div>
+            </div>
+            <div class="hud-cell">
+                <div class="hud-label">SCORE</div>
+                <div class="hud-value" id="score">0</div>
+            </div>
+            <div class="hud-cell">
+                <div class="hud-label">ACCURACY</div>
+                <div class="hud-value" id="accuracy">100%</div>
+            </div>
+            <div class="hud-cell">
+                <div class="hud-label">LIFE</div>
+                <div class="hud-value" id="life">100</div>
+            </div>
+        </section>
+
+        <div class="song-select-wrap">
+            <span class="song-select-label">TRACK</span>
+            <select id="songSelect">
+                <option value="0">🎵 Original Track — Neon Strike (BPM 142)</option>
+                <option value="1">⚡ ELECTRO PULSE — High Energy (BPM 160)</option>
+                <option value="2">🌙 MIDNIGHT DRIFT — Chill Wave (BPM 95)</option>
+                <option value="3">🔥 INFERNO RUSH — Hard Mode (BPM 185)</option>
+            </select>
+        </div>
+
+        <div id="fever-bar-wrap">
+            <span class="fever-label">FEVER</span>
+            <div id="fever-bar-bg"><div id="fever-bar-fill"></div></div>
+            <span id="fever-active-label">🔥 FEVER!</span>
+        </div>
+
+        <div class="game-wrap">
+            <canvas id="stage" width="736" height="520"></canvas>
+        </div>
+
+        <section class="controls">
+            <button id="startBtn" class="start-btn">▶ START</button>
+            <div class="key-guide">
+                <span id="keyA" class="key-cap">A</span>
+                <span id="keyS" class="key-cap">S</span>
+                <span id="keyD" class="key-cap">D</span>
+            </div>
+        </section>
+
+        <div class="message-bar">
+            <p id="message">START를 누르거나 터치해서 시작하세요.</p>
+        </div>
+
         <script src="js/notes.js"></script>
+
         <script src="js/game.js"></script>
     </body>
 </html>

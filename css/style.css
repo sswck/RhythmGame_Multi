@@ -1,174 +1,618 @@
-/* =========================================
-   Rhythm Multiplayer - style.css
-========================================= */
 :root {
-    --bg: #e9f0ff;
-    --panel: rgba(255, 255, 255, 0.2);
-    --panel-strong: rgba(255, 255, 255, 0.28);
-    --text: #0d1b38;
-    --accent: #0b5cff;
-    --accent-2: #7f5bff;
-    --line: rgba(255, 255, 255, 0.44);
-    --good: #93ffad;
-    --bad: #ff8a8a;
+    --bg-deep: #040610;
+    --bg-mid: #07101f;
+    --lane-a: #ff2d78;
+    --lane-b: #00f5ff;
+    --lane-c: #b44dff;
+    --gold: #ffd700;
+    --good-col: #39ff14;
+    --text-main: #e0f0ff;
+    --hud-bg: rgba(0, 15, 40, 0.85);
+    --panel-border: rgba(0, 200, 255, 0.18);
 }
 
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-    margin: 0;
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background:
-        radial-gradient(circle at 12% 14%, rgba(104, 177, 255, 0.55), transparent 33%),
-        radial-gradient(circle at 88% 8%, rgba(180, 129, 255, 0.5), transparent 35%),
-        radial-gradient(circle at 50% 118%, rgba(255, 255, 255, 0.7), transparent 48%),
-        linear-gradient(140deg, #dbe8ff 0%, #cfdfff 42%, #dff1ff 100%);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: var(--text);
-}
-
-.shell {
-    width: 100%;
-    max-width: 800px;
-    height: 95vh;
+    min-height: 100vh;
+    background: var(--bg-deep);
+    font-family: "Rajdhani", "Apple SD Gothic Neo", sans-serif;
+    color: var(--text-main);
     display: flex;
     flex-direction: column;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(15px);
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    overflow: hidden;
+    align-items: center;
+    justify-content: flex-start;
+    overflow-x: hidden;
 }
 
-.topbar {
-    text-align: center;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.3);
-    border-bottom: 1px solid var(--line);
+/* ── 별 배경 ── */
+#star-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
 }
 
-.topbar h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    letter-spacing: 2px;
-    color: var(--text);
+/* ── 스캔라인 오버레이 ── */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0, 0, 0, 0.04) 3px,
+        rgba(0, 0, 0, 0.04) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+}
+
+/* ── 타이틀 바 ── */
+.title-bar {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 760px;
+    padding: 14px 20px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(0, 200, 255, 0.2);
+}
+
+.game-title {
+    font-family: "Orbitron", sans-serif;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    background: linear-gradient(90deg, #00f5ff, #b44dff, #ff2d78);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    filter: drop-shadow(0 0 12px rgba(0, 200, 255, 0.5));
 }
 
 .subtitle {
-    margin: 5px 0 0;
-    font-size: 0.9rem;
-    opacity: 0.8;
+    font-size: 12px;
+    color: rgba(150, 200, 255, 0.6);
+    letter-spacing: 0.1em;
 }
 
+/* ── HUD ── */
 .hud {
-    display: flex;
-    justify-content: space-around;
-    padding: 15px;
-    background: var(--panel);
-    border-bottom: 1px solid var(--line);
-}
-
-.hud div {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.hud span {
-    font-size: 0.8rem;
-    opacity: 0.7;
-    margin-bottom: 4px;
-    font-weight: bold;
-}
-
-.hud strong {
-    font-size: 1.2rem;
-    font-weight: 900;
-}
-
-.game-wrap {
-    flex: 1;
     position: relative;
-    background: rgba(10, 15, 30, 0.85);
+    z-index: 10;
+    width: 100%;
+    max-width: 760px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    padding: 8px 12px;
+}
+
+.hud-cell {
+    background: var(--hud-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 7px 10px;
+    position: relative;
     overflow: hidden;
 }
 
-canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
+.hud-cell::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 200, 255, 0.4), transparent);
 }
 
+.hud-label {
+    font-family: "Orbitron", sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: rgba(100, 180, 255, 0.6);
+}
+
+.hud-value {
+    font-family: "Orbitron", sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #c8e8ff;
+    line-height: 1.1;
+}
+
+.hud-value.combo-big {
+    font-size: 22px;
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+
+/* ── 게임 캔버스 래퍼 ── */
+.game-wrap {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 760px;
+    padding: 0 12px;
+}
+
+#stage {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 200, 255, 0.15);
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.5),
+        0 20px 60px rgba(0, 0, 0, 0.7),
+        inset 0 0 40px rgba(0, 20, 60, 0.3);
+}
+
+/* ── 컨트롤 섹션 ── */
 .controls {
-    padding: 20px;
-    text-align: center;
-    background: rgba(255, 255, 255, 0.2);
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 760px;
+    padding: 8px 12px;
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 8px;
 }
 
 .start-btn {
-    background: linear-gradient(140deg, #8baaff, #8f70ff);
-    border: none;
-    color: white;
-    padding: 15px 50px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    border-radius: 30px;
+    font-family: "Orbitron", sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #fff;
+    background: linear-gradient(135deg, rgba(0, 200, 255, 0.25), rgba(0, 80, 180, 0.35));
+    border: 1px solid rgba(0, 200, 255, 0.5);
+    border-radius: 8px;
+    padding: 12px;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(139, 170, 255, 0.4);
-    transition: transform 0.1s, filter 0.2s;
+    transition: all 0.15s;
+    text-shadow: 0 0 8px rgba(0, 200, 255, 0.8);
+    box-shadow:
+        0 0 20px rgba(0, 200, 255, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.start-btn:hover {
+    background: linear-gradient(135deg, rgba(0, 200, 255, 0.4), rgba(0, 80, 180, 0.5));
+    box-shadow: 0 0 30px rgba(0, 200, 255, 0.35);
+    transform: translateY(-1px);
 }
 
 .start-btn:active {
-    transform: scale(0.95);
+    transform: translateY(1px);
 }
 
 .start-btn:disabled {
-    filter: grayscale(1);
+    opacity: 0.4;
     cursor: not-allowed;
-    opacity: 0.7;
+    transform: none;
 }
 
+/* ── 키 가이드 ── */
 .key-guide {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 10px;
-    margin-top: 15px;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
 }
 
 .key-cap {
-    display: grid;
-    place-items: center;
-    border-radius: 12px;
-    background: linear-gradient(145deg, rgba(178, 202, 255, 0.58), rgba(180, 158, 255, 0.42));
-    border: 1px solid rgba(255, 255, 255, 0.56);
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    padding: 15px 0;
-    color: #163066;
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.8),
-        0 4px 0 rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-family: "Orbitron", sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    min-height: 44px;
+    cursor: pointer;
+    transition: all 0.08s;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#keyA {
+    background: linear-gradient(160deg, rgba(255, 45, 120, 0.28), rgba(255, 45, 120, 0.1));
+    border: 1px solid rgba(255, 45, 120, 0.5);
+    color: #ff2d78;
+    text-shadow: 0 0 10px rgba(255, 45, 120, 0.7);
+}
+#keyS {
+    background: linear-gradient(160deg, rgba(0, 245, 255, 0.28), rgba(0, 245, 255, 0.1));
+    border: 1px solid rgba(0, 245, 255, 0.5);
+    color: #00f5ff;
+    text-shadow: 0 0 10px rgba(0, 245, 255, 0.7);
+}
+#keyD {
+    background: linear-gradient(160deg, rgba(180, 77, 255, 0.28), rgba(180, 77, 255, 0.1));
+    border: 1px solid rgba(180, 77, 255, 0.5);
+    color: #b44dff;
+    text-shadow: 0 0 10px rgba(180, 77, 255, 0.7);
 }
 
 .key-cap.is-down {
-    background: var(--accent);
-    color: white;
-    transform: translateY(4px);
-    box-shadow: 0 0 0 transparent;
+    transform: translateY(2px) scale(0.97);
+    filter: brightness(1.8);
 }
 
-.message {
+#keyA.is-down {
+    box-shadow: 0 0 20px rgba(255, 45, 120, 0.7);
+}
+#keyS.is-down {
+    box-shadow: 0 0 20px rgba(0, 245, 255, 0.7);
+}
+#keyD.is-down {
+    box-shadow: 0 0 20px rgba(180, 77, 255, 0.7);
+}
+
+/* ── 메시지 바 ── */
+.message-bar {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 760px;
+    padding: 0 12px 10px;
+}
+
+#message {
+    font-size: 13px;
+    color: rgba(150, 200, 255, 0.75);
+    background: var(--hud-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    letter-spacing: 0.04em;
+    min-height: 36px;
+}
+
+/* ── 결과 오버레이 ── */
+#result-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: rgba(0, 5, 20, 0.92);
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+}
+
+#result-overlay.show {
+    display: flex;
+    animation: fadeInOverlay 0.4s ease;
+}
+
+@keyframes fadeInOverlay {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.result-card {
+    width: min(460px, 90vw);
+    background: linear-gradient(160deg, rgba(5, 20, 60, 0.98), rgba(2, 8, 30, 0.98));
+    border: 1px solid rgba(0, 200, 255, 0.3);
+    border-radius: 16px;
+    padding: 36px 32px;
     text-align: center;
-    font-weight: bold;
-    color: var(--accent);
-    margin-top: 10px;
+    box-shadow:
+        0 0 80px rgba(0, 100, 255, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+.result-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #ff2d78, #00f5ff, #b44dff);
+}
+
+.result-grade {
+    font-family: "Orbitron", sans-serif;
+    font-size: 72px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.result-grade.SS {
+    color: #ffd700;
+    text-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+}
+.result-grade.S {
+    color: #ff9500;
+    text-shadow: 0 0 30px rgba(255, 149, 0, 0.8);
+}
+.result-grade.A {
+    color: #00f5ff;
+    text-shadow: 0 0 30px rgba(0, 245, 255, 0.8);
+}
+.result-grade.B {
+    color: #39ff14;
+    text-shadow: 0 0 30px rgba(57, 255, 20, 0.8);
+}
+.result-grade.C {
+    color: #b44dff;
+    text-shadow: 0 0 30px rgba(180, 77, 255, 0.7);
+}
+.result-grade.F {
+    color: #ff2d78;
+    text-shadow: 0 0 30px rgba(255, 45, 120, 0.7);
+}
+
+.result-title {
+    font-family: "Orbitron", sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    color: rgba(150, 200, 255, 0.6);
+    margin-bottom: 24px;
+}
+
+.result-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.result-stat {
+    background: rgba(0, 20, 60, 0.6);
+    border: 1px solid rgba(0, 200, 255, 0.15);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.result-stat-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: rgba(100, 160, 255, 0.6);
+}
+
+.result-stat-val {
+    font-family: "Orbitron", sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #c8e8ff;
+}
+
+.result-btn {
+    font-family: "Orbitron", sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #fff;
+    background: linear-gradient(135deg, rgba(0, 200, 255, 0.3), rgba(100, 0, 200, 0.3));
+    border: 1px solid rgba(0, 200, 255, 0.5);
+    border-radius: 8px;
+    padding: 14px 36px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-shadow: 0 0 8px rgba(0, 200, 255, 0.5);
+}
+
+.result-btn:hover {
+    background: linear-gradient(135deg, rgba(0, 200, 255, 0.5), rgba(100, 0, 200, 0.5));
+    box-shadow: 0 0 30px rgba(0, 200, 255, 0.3);
+}
+
+/* ── 판정 카운터 ── */
+.judge-counts {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.jc {
+    padding: 8px 6px;
+    border-radius: 6px;
+    border: 1px solid;
+    font-size: 11px;
+}
+.jc-label {
+    letter-spacing: 0.08em;
+    font-size: 10px;
+    opacity: 0.7;
+}
+.jc-count {
+    font-family: "Orbitron", sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+}
+.jc.perfect {
+    border-color: rgba(0, 245, 255, 0.4);
+    background: rgba(0, 245, 255, 0.06);
+    color: #00f5ff;
+}
+.jc.great {
+    border-color: rgba(255, 215, 0, 0.4);
+    background: rgba(255, 215, 0, 0.06);
+    color: #ffd700;
+}
+.jc.good {
+    border-color: rgba(57, 255, 20, 0.4);
+    background: rgba(57, 255, 20, 0.06);
+    color: #39ff14;
+}
+.jc.miss {
+    border-color: rgba(255, 45, 120, 0.4);
+    background: rgba(255, 45, 120, 0.06);
+    color: #ff2d78;
+}
+
+@media (max-width: 520px) {
+    .hud {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .game-title {
+        font-size: 16px;
+    }
+    .result-grade {
+        font-size: 56px;
+    }
+}
+
+/* ── 곡 선택 ── */
+.song-select-wrap {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 760px;
+    padding: 0 12px 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.song-select-label {
+    font-family: "Orbitron", sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: rgba(100, 180, 255, 0.6);
+    white-space: nowrap;
+}
+#songSelect {
+    flex: 1;
+    background: rgba(0, 15, 40, 0.9);
+    border: 1px solid rgba(0, 200, 255, 0.3);
+    border-radius: 6px;
+    color: #c8e8ff;
+    font-family: "Rajdhani", sans-serif;
+    font-size: 14px;
+    padding: 7px 10px;
+    cursor: pointer;
+    outline: none;
+}
+#songSelect:focus {
+    border-color: rgba(0, 200, 255, 0.7);
+}
+#songSelect option {
+    background: #07101f;
+}
+
+/* ── 카운트다운 오버레이 ── */
+#countdown-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 400;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+#countdown-overlay.show {
+    display: flex;
+}
+#countdown-num {
+    font-family: "Orbitron", sans-serif;
+    font-size: 120px;
+    font-weight: 900;
+    color: #00f5ff;
+    text-shadow:
+        0 0 60px #00f5ff,
+        0 0 120px rgba(0, 200, 255, 0.4);
+    animation: countPop 0.8s ease-out forwards;
+}
+@keyframes countPop {
+    0% {
+        transform: scale(1.8);
+        opacity: 0;
+    }
+    20% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    80% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.6);
+        opacity: 0;
+    }
+}
+
+/* ── FEVER MODE ── */
+#fever-bar-wrap {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 760px;
+    padding: 0 12px 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.fever-label {
+    font-family: "Orbitron", sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: rgba(255, 80, 200, 0.7);
+    white-space: nowrap;
+    min-width: 46px;
+}
+#fever-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 3px;
+    overflow: hidden;
+}
+#fever-bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #b44dff, #ff2d78, #ffd700);
+    transition: width 0.15s;
+}
+#fever-active-label {
+    font-family: "Orbitron", sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: #ffd700;
+    text-shadow: 0 0 8px #ffd700;
+    opacity: 0;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+}
+#fever-active-label.on {
+    opacity: 1;
+    animation: feverPulse 0.6s infinite alternate;
+}
+@keyframes feverPulse {
+    from {
+        text-shadow: 0 0 8px #ffd700;
+    }
+    to {
+        text-shadow:
+            0 0 24px #ff8c00,
+            0 0 40px rgba(255, 150, 0, 0.5);
+    }
 }
