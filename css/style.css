@@ -1,0 +1,174 @@
+/* =========================================
+   Rhythm Multiplayer - style.css
+========================================= */
+:root {
+    --bg: #e9f0ff;
+    --panel: rgba(255, 255, 255, 0.2);
+    --panel-strong: rgba(255, 255, 255, 0.28);
+    --text: #0d1b38;
+    --accent: #0b5cff;
+    --accent-2: #7f5bff;
+    --line: rgba(255, 255, 255, 0.44);
+    --good: #93ffad;
+    --bad: #ff8a8a;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background:
+        radial-gradient(circle at 12% 14%, rgba(104, 177, 255, 0.55), transparent 33%),
+        radial-gradient(circle at 88% 8%, rgba(180, 129, 255, 0.5), transparent 35%),
+        radial-gradient(circle at 50% 118%, rgba(255, 255, 255, 0.7), transparent 48%),
+        linear-gradient(140deg, #dbe8ff 0%, #cfdfff 42%, #dff1ff 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text);
+}
+
+.shell {
+    width: 100%;
+    max-width: 800px;
+    height: 95vh;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.topbar {
+    text-align: center;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.3);
+    border-bottom: 1px solid var(--line);
+}
+
+.topbar h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+    color: var(--text);
+}
+
+.subtitle {
+    margin: 5px 0 0;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.hud {
+    display: flex;
+    justify-content: space-around;
+    padding: 15px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+}
+
+.hud div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hud span {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    margin-bottom: 4px;
+    font-weight: bold;
+}
+
+.hud strong {
+    font-size: 1.2rem;
+    font-weight: 900;
+}
+
+.game-wrap {
+    flex: 1;
+    position: relative;
+    background: rgba(10, 15, 30, 0.85);
+    overflow: hidden;
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.controls {
+    padding: 20px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.start-btn {
+    background: linear-gradient(140deg, #8baaff, #8f70ff);
+    border: none;
+    color: white;
+    padding: 15px 50px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(139, 170, 255, 0.4);
+    transition: transform 0.1s, filter 0.2s;
+}
+
+.start-btn:active {
+    transform: scale(0.95);
+}
+
+.start-btn:disabled {
+    filter: grayscale(1);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.key-guide {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.key-cap {
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: linear-gradient(145deg, rgba(178, 202, 255, 0.58), rgba(180, 158, 255, 0.42));
+    border: 1px solid rgba(255, 255, 255, 0.56);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    padding: 15px 0;
+    color: #163066;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        0 4px 0 rgba(0,0,0,0.1);
+}
+
+.key-cap.is-down {
+    background: var(--accent);
+    color: white;
+    transform: translateY(4px);
+    box-shadow: 0 0 0 transparent;
+}
+
+.message {
+    text-align: center;
+    font-weight: bold;
+    color: var(--accent);
+    margin-top: 10px;
+}

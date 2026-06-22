@@ -1,389 +1,49 @@
 <!doctype html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ONE KEY RHYTHM</title>
-    <style>
-        :root {
-            --bg: #e9f0ff;
-            --panel: rgba(255, 255, 255, 0.2);
-            --panel-strong: rgba(255, 255, 255, 0.28);
-            --text: #0d1b38;
-            --accent: #0b5cff;
-            --good: #93ffad;
-            --bad: #ff8a8a;
-        }
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>RHYTHM MULTIPLAYER</title>
+        <!-- 1. CSS 파일 연결 -->
+        <link rel="stylesheet" href="css/style.css" />
+    </head>
+    <body>
+        <div class="shell">
+            <main class="app">
+                <header class="topbar">
+                    <h1>RHYTHM MULTIPLAYER</h1>
+                    <p class="subtitle">멀티플레이 리듬 게임</p>
+                </header>
 
-        * { box-sizing: border-box; }
+                <section class="hud" aria-label="게임 정보">
+                    <div><span>BPM</span><strong id="bpm">128</strong></div>
+                    <div><span>COMBO</span><strong id="combo">0</strong></div>
+                    <div><span>SCORE</span><strong id="score">0</strong></div>
+                    <div><span>ACCURACY</span><strong id="accuracy">100.00%</strong></div>
+                    <div><span>LIFE</span><strong id="life">100</strong></div>
+                </section>
 
-        body {
-            margin: 0;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            background:
-                radial-gradient(circle at 12% 14%, rgba(104, 177, 255, 0.55), transparent 33%),
-                radial-gradient(circle at 88% 8%, rgba(180, 129, 255, 0.5), transparent 35%),
-                linear-gradient(140deg, #dbe8ff 0%, #cfdfff 42%, #dff1ff 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: var(--text);
-        }
+                <section class="game-wrap">
+                    <canvas id="stage" aria-label="리듬게임 스테이지"></canvas>
+                </section>
 
-        .shell {
-            width: 100%;
-            max-width: 800px;
-            display: flex;
-            flex-direction: column;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
+                <section class="controls" aria-label="입력 버튼">
+                    <button id="startBtn" class="start-btn">START</button>
+                    <div class="key-guide" aria-label="입력 키 가이드">
+                        <span id="keyA" class="key-cap">A</span>
+                        <span id="keyS" class="key-cap">S</span>
+                        <span id="keyD" class="key-cap">D</span>
+                        <span id="keyF" class="key-cap">F</span>
+                        <span id="keyG" class="key-cap">G</span>
+                    </div>
+                </section>
 
-        .topbar { text-align: center; padding: 15px; border-bottom: 1px solid var(--panel-strong); }
-        .topbar h1 { margin: 0; font-size: 1.5rem; letter-spacing: 2px; }
-        .subtitle { margin: 5px 0 0; font-size: 0.9rem; opacity: 0.8; }
+                <p id="message" class="message">START를 누르면 곡이 시작됩니다.</p>
+            </main>
+        </div>
 
-        .hud {
-            display: flex;
-            justify-content: space-around;
-            padding: 15px;
-            background: var(--panel);
-            font-weight: bold;
-        }
-        .hud div { display: flex; flex-direction: column; align-items: center; }
-        .hud span { font-size: 0.8rem; opacity: 0.7; margin-bottom: 4px; }
-        .hud strong { font-size: 1.2rem; }
-
-        .game-wrap {
-            flex: 1;
-            position: relative;
-            background: rgba(0, 0, 0, 0.85); /* 리듬게임 집중을 위해 어둡게 */
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        .controls { padding: 20px; text-align: center; }
-        .start-btn {
-            background: linear-gradient(140deg, #8baaff, #8f70ff);
-            border: none;
-            color: white;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(139, 170, 255, 0.4);
-            transition: transform 0.1s;
-        }
-        .start-btn:active { transform: scale(0.95); }
-        .start-btn:disabled { filter: grayscale(1); cursor: not-allowed; }
-
-        .key-guide {
-            display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap: 10px;
-            margin-top: 15px;
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .key-cap {
-            background: linear-gradient(145deg, rgba(255,255,255,0.8), rgba(255,255,255,0.4));
-            border: 1px solid rgba(0,0,0,0.1);
-            padding: 15px 0;
-            border-radius: 12px;
-            font-weight: 800;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
-        }
-        .key-cap.is-down {
-            background: var(--accent);
-            color: white;
-            transform: translateY(4px);
-            box-shadow: 0 0 0 transparent;
-        }
-
-        .message { text-align: center; font-weight: bold; color: var(--accent); }
-    </style>
-</head>
-<body>
-    <div class="shell">
-        <main class="app">
-            <header class="topbar">
-                <h1>RHYTHM MULTIPLAYER</h1>
-                <p class="subtitle">네트워크 배틀 준비 중...</p>
-            </header>
-
-            <section class="hud">
-                <div><span>BPM</span><strong id="bpm">0</strong></div>
-                <div><span>COMBO</span><strong id="combo">0</strong></div>
-                <div><span>SCORE</span><strong id="score">0</strong></div>
-                <div><span>LIFE</span><strong id="life">100</strong></div>
-            </section>
-
-            <section class="game-wrap">
-                <canvas id="stage"></canvas>
-            </section>
-
-            <section class="controls">
-                <button id="startBtn" class="start-btn" disabled>START</button>
-                <div class="key-guide">
-                    <span id="keyA" class="key-cap">A</span>
-                    <span id="keyS" class="key-cap">S</span>
-                    <span id="keyD" class="key-cap">D</span>
-                    <span id="keyF" class="key-cap">F</span>
-                    <span id="keyG" class="key-cap">G</span>
-                </div>
-            </section>
-            <p id="message" class="message">노트 데이터를 불러오는 중...</p>
-        </main>
-    </div>
-
-    <script>
-        // --- 1. Notes Data (기존 notes.js 통합) ---
-        window.PRELOADED_NOTES = {
-            "bpm": 175.0,
-            "ticksPerBeat": 384,
-            "notes": [
-                { "start_tick": 0, "pitch": 81 },
-                { "start_tick": 192, "pitch": 77 },
-                { "start_tick": 384, "pitch": 81 },
-                { "start_tick": 576, "pitch": 33 },
-                { "start_tick": 768, "pitch": 35 },
-                { "start_tick": 960, "pitch": 81 },
-                // 테스트용으로 길게 추가
-                { "start_tick": 1152, "pitch": 77 },
-                { "start_tick": 1344, "pitch": 81 },
-                { "start_tick": 1536, "pitch": 33 }
-            ]
-        };
-
-        // --- 2. Game Logic (기존 game.js 통합 및 최신화) ---
-        const canvas = document.getElementById("stage");
-        const ctx = canvas.getContext("2d");
-
-        const bpmEl = document.getElementById("bpm");
-        const comboEl = document.getElementById("combo");
-        const scoreEl = document.getElementById("score");
-        const lifeEl = document.getElementById("life");
-        const messageEl = document.getElementById("message");
-        const startBtn = document.getElementById("startBtn");
-        
-        const keyEls = {
-            0: document.getElementById("keyA"),
-            1: document.getElementById("keyS"),
-            2: document.getElementById("keyD"),
-            3: document.getElementById("keyF"),
-            4: document.getElementById("keyG")
-        };
-
-        // 게임 설정
-        let BPM = 175;
-        let LANE_COUNT = 3; // 현재 3키 모드 기준
-        let LANE_WIDTH = 80;
-        const LANE_GAP = 10;
-        let TOTAL_LANE_WIDTH = LANE_COUNT * LANE_WIDTH + (LANE_COUNT - 1) * LANE_GAP;
-        let LANE_START_X = 0;
-        let TICKS_PER_BEAT = 384;
-
-        const HIT_Y_OFFSET = 80; 
-        let HIT_Y = 0; 
-        const NOTE_APPEAR_TIME = 1.5; 
-
-        // 상태
-        let state = {
-            running: false,
-            combo: 0,
-            score: 0,
-            life: 100,
-            keyDown: [false, false, false, false, false]
-        };
-
-        const musicAudio = new Audio('assets/music.mp3'); 
-        let notes = []; 
-
-        function resizeCanvas() {
-            const rect = canvas.parentElement.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
-            LANE_START_X = (canvas.width / 2) - (TOTAL_LANE_WIDTH / 2);
-            HIT_Y = canvas.height - HIT_Y_OFFSET;
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        function loadNotesChart() {
-            if (window.PRELOADED_NOTES) {
-                BPM = window.PRELOADED_NOTES.bpm;
-                TICKS_PER_BEAT = window.PRELOADED_NOTES.ticksPerBeat;
-                bpmEl.textContent = Math.round(BPM);
-
-                const rawNotes = window.PRELOADED_NOTES.notes;
-                notes = rawNotes.map(n => {
-                    const beat = n.start_tick / TICKS_PER_BEAT;
-                    const time = beat * (60 / BPM);
-                    const lane = n.pitch % LANE_COUNT; 
-                    
-                    return { time: time, lane: lane, hit: false, missed: false };
-                });
-                
-                notes.sort((a, b) => a.time - b.time);
-                messageEl.textContent = "준비 완료! START를 누르세요.";
-                startBtn.disabled = false;
-            }
-        }
-
-        function startGame() {
-            if (state.running) return;
-            state = { ...state, running: true, combo: 0, score: 0, life: 100 };
-            notes.forEach(n => { n.hit = false; n.missed = false; });
-            
-            startBtn.disabled = true;
-            messageEl.textContent = "";
-            
-            musicAudio.currentTime = 0;
-            musicAudio.play().then(() => {
-                requestAnimationFrame(gameLoop);
-            }).catch(err => {
-                console.error("Audio play failed:", err);
-                messageEl.textContent = "오디오 오류. 무음 모드로 테스트합니다.";
-                // 에러나도 화면 렌더링은 진행되도록 임시 처리
-                requestAnimationFrame(gameLoop);
-            });
-        }
-
-        function gameLoop() {
-            if (!state.running) return;
-            update();
-            draw();
-            
-            // 음악이 재생중이거나 오류로 무음일 때 임시 타이머로 진행
-            if (!musicAudio.ended) {
-                requestAnimationFrame(gameLoop);
-            } else {
-                finishGame();
-            }
-        }
-
-        function update() {
-            const currentTime = musicAudio.currentTime > 0 ? musicAudio.currentTime : (performance.now() / 1000) % 5; // 임시 폴백
-
-            notes.forEach(note => {
-                if (!note.hit && !note.missed) {
-                    if (currentTime > note.time + 0.2) {
-                        note.missed = true;
-                        handleMiss();
-                    }
-                }
-            });
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const currentTime = musicAudio.currentTime > 0 ? musicAudio.currentTime : (performance.now() / 1000) % 5;
-
-            drawLanes();
-
-            ctx.fillStyle = "#64c8ff"; 
-            
-            notes.forEach(note => {
-                if (!note.hit && !note.missed) {
-                    if (note.time - currentTime <= NOTE_APPEAR_TIME && note.time >= currentTime - 0.5) {
-                        const timeDiff = note.time - currentTime;
-                        const yPos = HIT_Y - (timeDiff / NOTE_APPEAR_TIME) * HIT_Y;
-                        const xPos = LANE_START_X + (note.lane * (LANE_WIDTH + LANE_GAP));
-                        
-                        ctx.fillRect(xPos, yPos - 10, LANE_WIDTH, 20); 
-                    }
-                }
-            });
-        }
-
-        function drawLanes() {
-            ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
-            ctx.lineWidth = 2;
-
-            for (let i = 0; i < LANE_COUNT; i++) {
-                const xPos = LANE_START_X + (i * (LANE_WIDTH + LANE_GAP));
-                ctx.fillRect(xPos, 0, LANE_WIDTH, canvas.height);
-                
-                ctx.beginPath();
-                ctx.moveTo(xPos, HIT_Y);
-                ctx.lineTo(xPos + LANE_WIDTH, HIT_Y);
-                ctx.stroke();
-            }
-        }
-
-        function handleMiss() {
-            state.combo = 0;
-            state.life = Math.max(0, state.life - 5);
-            updateUI();
-        }
-
-        function handleHit(lane) {
-            // 가장 가까운 노트 찾기 판정 로직
-            const currentTime = musicAudio.currentTime > 0 ? musicAudio.currentTime : (performance.now() / 1000) % 5;
-            const validNotes = notes.filter(n => !n.hit && !n.missed && n.lane === lane && Math.abs(n.time - currentTime) < 0.2);
-            
-            if (validNotes.length > 0) {
-                const note = validNotes[0];
-                note.hit = true;
-                state.combo++;
-                state.score += 100;
-                updateUI();
-            }
-        }
-
-        function updateUI() {
-            comboEl.textContent = state.combo;
-            scoreEl.textContent = state.score;
-            lifeEl.textContent = state.life;
-        }
-
-        function finishGame() {
-            state.running = false;
-            messageEl.textContent = "게임 종료!";
-            startBtn.disabled = false;
-        }
-
-        // --- Keyboard Events ---
-        window.addEventListener("keydown", (event) => {
-            if(!state.running) return;
-            const codeToLane = { KeyA: 0, KeyS: 1, KeyD: 2, KeyF: 3, KeyG: 4 };
-            if (!(event.code in codeToLane)) return;
-            
-            const lane = codeToLane[event.code];
-            if (lane >= LANE_COUNT) return; // 3키 모드 방어
-
-            if (!state.keyDown[lane]) {
-                state.keyDown[lane] = true;
-                keyEls[lane].classList.add("is-down");
-                handleHit(lane); // 판정 로직 호출
-            }
-        });
-
-        window.addEventListener("keyup", (event) => {
-            const codeToLane = { KeyA: 0, KeyS: 1, KeyD: 2, KeyF: 3, KeyG: 4 };
-            if (!(event.code in codeToLane)) return;
-            
-            const lane = codeToLane[event.code];
-            if (lane >= LANE_COUNT) return;
-
-            state.keyDown[lane] = false;
-            keyEls[lane].classList.remove("is-down");
-        });
-
-        startBtn.addEventListener("click", startGame);
-        
-        // 초기화
-        setTimeout(loadNotesChart, 500); 
-    </script>
-</body>
+        <!-- 2. JS 파일 연결 (순서 중요: 데이터가 로직보다 먼저 로드되어야 합니다) -->
+        <script src="js/notes.js"></script>
+        <script src="js/game.js"></script>
+    </body>
 </html>
