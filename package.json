@@ -1,0 +1,25 @@
+{
+  "name": "rhythmgame_multi",
+  "version": "1.0.0",
+  "description": "HTML5 Canvas와 Vanilla JavaScript로 구현된 웹 기반 리듬 게임입니다. 향후 Node.js와 Socket.io를 활용하여 동일 네트워크(로컬) 상의 유저 간 멀티플레이(배틀 모드)를 지원하는 것을 목표로 합니다.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sswck/RhythmGame_Multi.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/sswck/RhythmGame_Multi/issues"
+  },
+  "homepage": "https://github.com/sswck/RhythmGame_Multi#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3"
+  }
+}

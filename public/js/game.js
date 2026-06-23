@@ -246,6 +246,40 @@ let audioCtx, masterGain, musicGain, sfxGain;
 const musicAudio = new Audio("assets/song.mp3");
 musicAudio.preload = "auto";
 
+// ── 멀티플레이 (Socket.io) ──────────────────────
+const socket = io(); // 서버와 연결
+let currentRoom = null;
+let isMultiplayer = false;
+
+const oppInfoEl = document.getElementById("opponent-info");
+const oppScoreEl = document.getElementById("opponent-score-display");
+
+socket.on("waiting", (data) => {
+    if (oppInfoEl) {
+        oppInfoEl.style.display = "block";
+        oppInfoEl.textContent = data.message;
+    }
+});
+
+socket.on("match_found", (data) => {
+    currentRoom = data.room;
+    isMultiplayer = true;
+    if (oppInfoEl) {
+        oppInfoEl.style.display = "block";
+        oppInfoEl.textContent = "🔥 매칭 완료! 상대방과 대결합니다!";
+        oppInfoEl.style.color = "#39ff14";
+    }
+    if (oppScoreEl) {
+        oppScoreEl.style.display = "inline-block";
+    }
+});
+
+socket.on("opponent_update", (data) => {
+    if (oppScoreEl) {
+        oppScoreEl.textContent = `OPPONENT: ${data.score.toLocaleString()} (Combo: ${data.combo})`;
+    }
+});
+
 // ── 게임 상태 ──────────────────────────────────
 const state = {
     running: false,
@@ -666,6 +700,15 @@ function applyJudge(kind, lane = null) {
     }
 
     if (state.combo > state.maxCombo) state.maxCombo = state.combo;
+
+    // 💡 멀티플레이 점수 서버로 전송
+    if (isMultiplayer && currentRoom) {
+        socket.emit("update_score", {
+            room: currentRoom,
+            score: state.score,
+            combo: state.combo,
+        });
+    }
 
     // 피버 게이지 업데이트
     if (kind === "PERFECT") {

@@ -68,8 +68,16 @@
             <div>
                 <div class="game-title">NEON STRIKE</div>
                 <div class="subtitle">3-LANE RHYTHM GAME</div>
+                <div id="opponent-info" style="color: #ff2d78; font-size: 12px; margin-top: 4px; display: none">
+                    상대방 대기 중...
+                </div>
             </div>
             <div style="text-align: right; font-size: 11px; color: rgba(100, 180, 255, 0.5); letter-spacing: 0.08em">
+                <span
+                    id="opponent-score-display"
+                    style="display: none; color: #ffd700; margin-right: 10px; font-size: 14px; font-weight: bold"
+                    >OPPONENT: 0</span
+                >
                 A&nbsp;·&nbsp;S&nbsp;·&nbsp;D&nbsp;&nbsp;|&nbsp;&nbsp;TAP
             </div>
         </div>
@@ -130,8 +138,8 @@
             <p id="message">START를 누르거나 터치해서 시작하세요.</p>
         </div>
 
+        <script src="/socket.io/socket.io.js"></script>
         <script src="js/notes.js"></script>
-
         <script src="js/game.js"></script>
     </body>
 </html>
