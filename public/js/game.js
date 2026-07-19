@@ -50,7 +50,8 @@ const ctx = canvas.getContext("2d");
 const SONGS = [
     {
         name: "Original Track",
-        bpm: 142,
+        // bpm: 142,
+        bpm: 160,
         chordRoots: [45, 50, 43, 48],
         src: null, // song.mp3 사용
         notesKey: "PRELOADED_NOTES",
@@ -207,7 +208,8 @@ window.INFERNO_NOTES = generateNotes(185, [
 
 let selectedSongIdx = 0;
 
-const BPM_BASE = 142;
+// const BPM_BASE = 142;
+const BPM_BASE = 160;
 let BPM = BPM_BASE;
 let BEAT_SEC = 60 / BPM;
 const LANE_COUNT = 3;
@@ -227,7 +229,7 @@ const HOLD_MIN_TICKS = 192; // 롱 노트 최소 길이 (ticks)
 const LANE_COLORS = ["#ff2d78", "#00f5ff", "#b44dff"];
 const LANE_COLORS_GLOW = ["rgba(255,45,120,", "rgba(0,245,255,", "rgba(180,77,255,"];
 
-const WINDOWS = { perfect: 0.044, great: 0.088, good: 0.14, miss: 0.22 };
+const WINDOWS = { perfect: 0.07, great: 0.12, good: 0.18, miss: 0.25 };
 
 const laneKeys = ["A", "S", "D"];
 const keyEls = [document.getElementById("keyA"), document.getElementById("keyS"), document.getElementById("keyD")];
@@ -245,6 +247,80 @@ const startBtn = document.getElementById("startBtn");
 let audioCtx, masterGain, musicGain, sfxGain;
 const musicAudio = new Audio("assets/song.mp3");
 musicAudio.preload = "auto";
+
+// ── 멀티플레이 (Socket.io) ──────────────────────
+const socket = io(); // 서버와 연결
+let currentRoom = null;
+let isMultiplayer = false;
+let isOpponentGone = false;
+
+const oppInfoEl = document.getElementById("opponent-info");
+const oppScoreEl = document.getElementById("opponent-score-display");
+
+socket.on("waiting", (data) => {
+    if (oppInfoEl) {
+        oppInfoEl.style.display = "block";
+        oppInfoEl.textContent = data.message;
+    }
+});
+
+socket.on("match_found", (data) => {
+    currentRoom = data.room;
+    isMultiplayer = true;
+    isOpponentGone = false;
+    if (oppInfoEl) {
+        oppInfoEl.style.display = "block";
+        oppInfoEl.textContent = "🔥 매칭 완료! 상대방과 대결합니다!";
+        oppInfoEl.style.color = "#39ff14";
+    }
+    if (oppScoreEl) {
+        oppScoreEl.style.display = "inline-block";
+        oppScoreEl.textContent = "OPPONENT: 0 (Combo: 0)";
+    }
+});
+
+socket.on("opponent_update", (data) => {
+    if (oppScoreEl && !isOpponentGone) {
+        oppScoreEl.textContent = `OPPONENT: ${data.score.toLocaleString()} (Combo: ${data.combo})`;
+    }
+});
+
+socket.on("opponent_disconnected", () => {
+    isOpponentGone = true;
+    if (oppInfoEl) {
+        oppInfoEl.style.display = "block";
+        oppInfoEl.textContent = "⚠️ 상대방이 도망갔습니다! (기권승)";
+        oppInfoEl.style.color = "#ff2d78";
+    }
+    if (oppScoreEl) {
+        oppScoreEl.textContent = "OPPONENT: 기권함";
+    }
+    if (state.running) {
+        finishGame(true); // true = 클리어(승리) 판정
+    }
+});
+
+socket.on("start_game", (data) => {
+    // 플레이어가 직접 START 버튼을 누르지 못하게 막음
+    startBtn.disabled = true;
+    document.getElementById("songSelect").disabled = true;
+    messageEl.textContent = "서버 동기화 완료! 3초 후 시작합니다...";
+
+    const serverStartTime = data.serverStartTime;
+    const now = Date.now();
+
+    // 서버가 지정한 시간(3초 뒤)까지 남은 밀리초 계산
+    const timeToWait = serverStartTime - now;
+
+    // 만약 지연율(Ping) 때문에 이미 시간이 지났다면 즉시 시작, 아니면 기다렸다가 시작
+    if (timeToWait <= 0) {
+        startGameLogic();
+    } else {
+        setTimeout(() => {
+            startGameLogic();
+        }, timeToWait);
+    }
+});
 
 // ── 게임 상태 ──────────────────────────────────
 const state = {
@@ -667,6 +743,15 @@ function applyJudge(kind, lane = null) {
 
     if (state.combo > state.maxCombo) state.maxCombo = state.combo;
 
+    // 💡 멀티플레이 점수 서버로 전송
+    if (isMultiplayer && currentRoom) {
+        socket.emit("update_score", {
+            room: currentRoom,
+            score: state.score,
+            combo: state.combo,
+        });
+    }
+
     // 피버 게이지 업데이트
     if (kind === "PERFECT") {
         state.consecutivePerfect++;
@@ -721,12 +806,30 @@ function failNote(note) {
 
 function handleMissByTime(songTime) {
     state.notes.forEach((n) => {
-        if (n.completed || n.failed || n.active) return;
-        if (songTime - n.hitTime > WINDOWS.miss) failNote(n);
+        if (n.completed || n.failed) return;
+
+        if (n.type === "hold") {
+            // 롱노트: 시작 시간을 지나치게 놓쳤거나 (active 안됨),
+            // 누르고 있었는데(active=true) 끝나는 시간(endTime)을 한참 지나도록 안 뗐다면 Miss
+            if (!n.active && songTime - n.hitTime > WINDOWS.miss) {
+                failNote(n);
+            } else if (n.active && songTime - n.endTime > WINDOWS.miss) {
+                n.failed = true;
+                state.holdActive[n.lane] = false;
+                applyJudge("MISS", n.lane);
+            }
+        } else {
+            // 일반 노트 (Tap): 시작 시간 지나면 Miss
+            if (!n.active && songTime - n.hitTime > WINDOWS.miss) {
+                failNote(n);
+            }
+        }
     });
+
+    // 화면에서 지우는 로직 (가비지 컬렉션)
     state.notes = state.notes.filter((n) => {
-        if (n.failed) return songTime - n.hitTime < 1.0;
-        if (n.completed) return songTime - n.hitTime < 0.9;
+        if (n.failed) return songTime - (n.type === "hold" ? n.endTime : n.hitTime) < 1.0;
+        if (n.completed) return songTime - (n.type === "hold" ? n.endTime : n.hitTime) < 0.9;
         return true;
     });
 }
@@ -786,9 +889,11 @@ function onLaneRelease(lane) {
     const holdNote = state.notes.find(
         (n) => n.lane === lane && n.type === "hold" && n.active && !n.completed && !n.failed,
     );
+
     if (holdNote) {
         const remaining = holdNote.endTime - st;
-        if (remaining > 0.1) {
+        // 오차 널널히 허용해주고 PERFECT 처리
+        if (remaining > 0.15) {
             // 너무 일찍 놓음 → MISS
             holdNote.failed = true;
             state.holdActive[lane] = false;
@@ -798,6 +903,7 @@ function onLaneRelease(lane) {
             holdNote.completed = true;
             state.holdActive[lane] = false;
             applyJudge("PERFECT", lane);
+            spawnHitParticles(1.0, lane);
         }
     } else {
         state.holdActive[lane] = false;
@@ -1053,6 +1159,7 @@ function drawStage(songTime) {
         if (note.completed || note.failed) return;
         const lx = getLaneX(note.lane);
         const yHead = JUDGE_Y - (note.hitTime - songTime) * NOTE_SPEED;
+        const yTail = note.type === "hold" ? JUDGE_Y - (note.endTime - songTime) * NOTE_SPEED : yHead;
         if (yHead < -300 || yHead > canvas.height + 60) return;
 
         const nw = NOTE_W;
@@ -1328,14 +1435,15 @@ function tick() {
         scheduleMusic(songTime);
         updateParticles(dt);
 
-        // 홀드 노트 시간 기반 자동완료
+        // 💡 롱노트 시간 기반 자동완료 (수정됨)
         state.notes.forEach((n) => {
             if (n.type === "hold" && n.active && !n.completed && !n.failed) {
-                if (songTime >= n.endTime) {
+                // 키를 계속 누르고 있고, 곡 시간이 롱노트 종료 시간(endTime)에 거의 다다랐을 때
+                if (songTime >= n.endTime - 0.05) {
                     n.completed = true;
                     state.holdActive[n.lane] = false;
-                    // 완주 보너스 파티클
-                    spawnHitParticles(1.0, n.lane);
+                    applyJudge("PERFECT", n.lane); // 💡 여기서 최종 판정을 올려줍니다.
+                    spawnHitParticles(1.2, n.lane); // 완주 쾅! 파티클 크게
                 }
             }
         });
@@ -1372,7 +1480,7 @@ function tick() {
         const last = state.chart[state.chart.length - 1];
         const endTime = (last ? last.hitTime : 0) + 2.5;
         if (state.life <= 0) {
-            finishGame(false);
+            // finishGame(false);
         } else if (songTime > endTime && state.notes.every((n) => n.completed || n.failed)) {
             finishGame(true);
         }
@@ -1423,6 +1531,15 @@ function showCountdown(count, onDone) {
 
 // ── 게임 시작 ─────────────────────────────────
 async function startGame() {
+    if (isMultiplayer && currentRoom) {
+        messageEl.textContent = "멀티플레이 중입니다. 서버의 신호를 기다려주세요!";
+        return;
+    }
+    // 싱글플레이 시 즉시 시작
+    startGameLogic();
+}
+
+async function startGameLogic() {
     hideResultScreen();
     ensureAudio();
 
@@ -1443,12 +1560,7 @@ async function startGame() {
     if (!state.musicReady) preloadMusic();
 
     if (!state.notesReady) {
-        if (!state.notesLoading) {
-            loadNotesChart();
-            messageEl.textContent = "노트 데이터 로드 중... 잠시 후 START를 다시 눌러주세요.";
-        } else {
-            messageEl.textContent = "로드 중입니다...";
-        }
+        if (!state.notesLoading) loadNotesChart();
         return;
     }
 
@@ -1483,14 +1595,12 @@ async function startGame() {
         } else {
             setTimeout(() => {
                 musicAudio.currentTime = 0;
-                musicAudio.play().catch(() => {
-                    messageEl.textContent = "오디오 차단됨. START를 다시 눌러주세요.";
-                });
+                musicAudio.play().catch(() => {});
             }, delay * 1000);
         }
 
         updateHud();
-        messageEl.textContent = "A · S · D  |  HOLD 노트는 꾹 눌러요!  |  PERFECT 연속→ 🔥 FEVER MODE";
+        messageEl.textContent = isMultiplayer ? "🔥 배틀 시작!" : "A · S · D  |  HOLD 노트는 꾹 눌러요!";
         state.finished = false;
     });
 }
