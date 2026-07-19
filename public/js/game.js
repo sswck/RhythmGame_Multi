@@ -1076,12 +1076,16 @@ function drawStage(songTime) {
     ctx.save();
     ctx.translate(ox, oy);
 
-    // 배경
-    const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    bg.addColorStop(0, "#040610");
-    bg.addColorStop(0.55, "#071020");
-    bg.addColorStop(1, "#020508");
-    ctx.fillStyle = bg;
+    // 배경 (수정 전)
+    // const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    // bg.addColorStop(0, "#040610");
+    // bg.addColorStop(0.55, "#071020");
+    // bg.addColorStop(1, "#020508");
+    // ctx.fillStyle = bg;
+    // ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 배경 (수정 후): 메인 아트가 비치도록 반투명하게 설정
+    ctx.fillStyle = "rgba(4, 6, 16, 0.75)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // 비트 펄스 배경
@@ -1160,7 +1164,7 @@ function drawStage(songTime) {
         const lx = getLaneX(note.lane);
         const yHead = JUDGE_Y - (note.hitTime - songTime) * NOTE_SPEED;
         const yTail = note.type === "hold" ? JUDGE_Y - (note.endTime - songTime) * NOTE_SPEED : yHead;
-        if (yHead < -300 || yHead > canvas.height + 60) return;
+        if (yHead < -300 || yTail > canvas.height + 60) return;
 
         const nw = NOTE_W;
         const nh = NOTE_H;
