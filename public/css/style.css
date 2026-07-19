@@ -618,3 +618,62 @@ body::after {
             0 0 40px rgba(255, 150, 0, 0.5);
     }
 }
+
+/* ── UI 화면 상태 제어 ── */
+.screen-section {
+    display: none;
+    width: 100%;
+    max-width: 760px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.screen-section.active {
+    display: flex;
+    animation: fadeIn 0.4s ease;
+}
+
+/* ── 메인 타이틀 & 로비 버튼 ── */
+.menu-btn {
+    font-family: "Orbitron", sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #fff;
+    background: linear-gradient(135deg, rgba(0, 200, 255, 0.25), rgba(0, 80, 180, 0.35));
+    border: 1px solid rgba(0, 200, 255, 0.5);
+    border-radius: 8px;
+    padding: 16px 32px;
+    margin: 8px 0;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-shadow: 0 0 8px rgba(0, 200, 255, 0.8);
+    width: 100%;
+    max-width: 300px;
+}
+
+.menu-btn:hover {
+    background: linear-gradient(135deg, rgba(0, 200, 255, 0.4), rgba(0, 80, 180, 0.5));
+    box-shadow: 0 0 30px rgba(0, 200, 255, 0.35);
+    transform: translateY(-2px);
+}
+
+.menu-btn:active {
+    transform: translateY(1px);
+}
+
+.player-item {
+    font-family: "Rajdhani", sans-serif;
+    font-size: 18px;
+    color: #c8e8ff;
+    padding: 10px;
+    border-bottom: 1px solid rgba(0, 200, 255, 0.2);
+    display: flex;
+    justify-content: space-between;
+}
+.player-item.ready span {
+    color: #39ff14;
+    text-shadow: 0 0 10px rgba(57, 255, 20, 0.8);
+}

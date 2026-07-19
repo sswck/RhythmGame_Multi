@@ -248,78 +248,202 @@ let audioCtx, masterGain, musicGain, sfxGain;
 const musicAudio = new Audio("assets/song.mp3");
 musicAudio.preload = "auto";
 
-// ── 멀티플레이 (Socket.io) ──────────────────────
-const socket = io(); // 서버와 연결
+// ── 멀티플레이 (Socket.io) 및 로비 시스템 ──────────────────────
+const socket = io();
 let currentRoom = null;
 let isMultiplayer = false;
+let isHost = false;
 let isOpponentGone = false;
 
+// 💡 추가: 방 안의 모든 플레이어 정보를 저장할 배열과 스코어보드 UI 변수
+let roomPlayers = [];
+const scoreboardEl = document.getElementById("multiplayer-scoreboard");
+const scoreboardList = document.getElementById("scoreboard-list");
+
+// 💡 해결: 누락되었던 상대방 정보 UI 변수 선언 복구
 const oppInfoEl = document.getElementById("opponent-info");
 const oppScoreEl = document.getElementById("opponent-score-display");
 
-socket.on("waiting", (data) => {
-    if (oppInfoEl) {
-        oppInfoEl.style.display = "block";
-        oppInfoEl.textContent = data.message;
+// 화면 요소
+const screenTitle = document.getElementById("screen-title");
+const screenLobby = document.getElementById("screen-lobby");
+const screenGame = document.getElementById("screen-game");
+
+// 로비 요소
+const displayRoomCode = document.getElementById("display-room-code");
+const lobbyPlayers = document.getElementById("lobby-players");
+const readyStatus = document.getElementById("ready-status");
+const btnReady = document.getElementById("btn-ready");
+const btnStartMulti = document.getElementById("btn-start-multi");
+
+// 화면 전환 함수
+function showScreen(screenEl) {
+    screenTitle.classList.remove("active");
+    screenLobby.classList.remove("active");
+    screenGame.classList.remove("active");
+    screenEl.classList.add("active");
+}
+
+// ── 타이틀 화면 버튼 이벤트 ──
+document.getElementById("btn-singleplayer").addEventListener("click", () => {
+    isMultiplayer = false;
+    showScreen(screenGame);
+});
+
+document.getElementById("btn-create-room").addEventListener("click", () => {
+    socket.emit("create_room");
+});
+
+document.getElementById("btn-join-room").addEventListener("click", () => {
+    const code = document.getElementById("input-room-code").value;
+    if (code.length === 4) {
+        socket.emit("join_room", code);
+    } else {
+        alert("4자리 방 코드를 입력하세요.");
     }
 });
 
-socket.on("match_found", (data) => {
-    currentRoom = data.room;
+// ── 서버 통신 이벤트 ──
+socket.on("error_msg", (msg) => alert(msg));
+
+socket.on("room_created", (data) => {
+    currentRoom = data.roomCode;
     isMultiplayer = true;
-    isOpponentGone = false;
+    isHost = true;
+    displayRoomCode.textContent = currentRoom;
+    btnStartMulti.style.display = "block"; // 방장만 시작 버튼 보임
+    showScreen(screenLobby);
+});
+
+socket.on("room_joined", (data) => {
+    currentRoom = data.roomCode;
+    isMultiplayer = true;
+    isHost = false;
+    displayRoomCode.textContent = currentRoom;
+    btnStartMulti.style.display = "none";
+    showScreen(screenLobby);
+});
+
+// 💡 로비 내 인원 및 Ready 상태 동기화 (N/N 접속 표시 구현)
+socket.on("lobby_update", (players) => {
+    roomPlayers = players;
+    lobbyPlayers.innerHTML = "";
+    let readyCount = 0;
+
+    players.forEach((p, index) => {
+        if (p.ready) readyCount++;
+        const isMe = p.id === socket.id ? "(ME)" : "";
+        const readyText = p.ready ? "READY" : "WAITING";
+        const playerClass = p.ready ? "player-item ready" : "player-item";
+
+        lobbyPlayers.innerHTML += `
+            <div class="${playerClass}">
+                PLAYER ${index + 1} ${isMe} <span>${readyText}</span>
+            </div>
+        `;
+    });
+
+    readyStatus.textContent = `${readyCount}/${players.length} PLAYERS READY`;
+});
+
+function unlockAudio() {
+    ensureAudio();
+    // iOS 및 모바일 브라우저의 오디오 정책을 뚫기 위해 아무 소리 없는 음원을 0.1초간 강제 재생합니다.
+    if (audioCtx) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        gain.gain.value = 0; // 소리 크기 0 (무음)
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(0);
+        osc.stop(audioCtx.currentTime + 0.1);
+    }
+}
+
+// ── 로비 버튼 이벤트 ──
+btnReady.addEventListener("click", () => {
+    unlockAudio();
+    socket.emit("toggle_ready", currentRoom);
+});
+
+btnStartMulti.addEventListener("click", () => {
+    btnStartMulti.disabled = true;
+    btnStartMulti.textContent = "STARTING...";
+
+    unlockAudio();
+    socket.emit("request_start", currentRoom);
+});
+
+socket.on("start_game", (data) => {
+    showScreen(screenGame);
+    if (startBtn) startBtn.style.display = "none";
+    const songSel = document.getElementById("songSelect");
+    if (songSel) songSel.disabled = true;
+
+    if (scoreboardEl && scoreboardList) {
+        scoreboardEl.style.display = "block";
+        scoreboardList.innerHTML = "";
+
+        roomPlayers.forEach((p, index) => {
+            const isMe = p.id === socket.id ? " (ME)" : "";
+            const color = p.id === socket.id ? "#00f5ff" : "#ff2d78"; // 나는 파란색, 상대는 분홍색
+            scoreboardList.innerHTML += `
+                <li id="score-${p.id}" style="margin-bottom: 6px; color: ${color};">
+                    <div style="font-size: 14px; font-weight: bold;">P${index + 1}${isMe}</div>
+                    <div style="font-size: 20px; font-family: 'Orbitron';"><span class="p-score">0</span> <span class="p-combo" style="font-size: 11px; opacity: 0.7;">(x0)</span></div>
+                </li>
+            `;
+        });
+    }
+
     if (oppInfoEl) {
         oppInfoEl.style.display = "block";
-        oppInfoEl.textContent = "🔥 매칭 완료! 상대방과 대결합니다!";
-        oppInfoEl.style.color = "#39ff14";
+        oppInfoEl.textContent = "🔥 게임 동기화 완료! 상대와 대결 중!";
     }
     if (oppScoreEl) {
         oppScoreEl.style.display = "inline-block";
-        oppScoreEl.textContent = "OPPONENT: 0 (Combo: 0)";
+        // oppScoreEl.textContent = "OPPONENT: 0 (Combo: 0)";
+    }
+
+    hideResultScreen();
+
+    if (!state.notesReady && !state.notesLoading) {
+        loadNotesChart();
+    }
+
+    const now = Date.now();
+    const timeUntilStart = data.serverStartTime - now;
+
+    console.log(`⏱️ 서버 시작 시간까지 남은 시간: ${timeUntilStart}ms`);
+
+    showCountdown(3, () => {
+        console.log("✅ 시각적 카운트다운 완료");
+    });
+
+    if (timeUntilStart > 0) {
+        setTimeout(() => {
+            executeGameRun();
+        }, timeUntilStart);
+    } else {
+        executeGameRun();
     }
 });
 
+// 상대방 점수 갱신 이벤트
 socket.on("opponent_update", (data) => {
-    if (oppScoreEl && !isOpponentGone) {
-        oppScoreEl.textContent = `OPPONENT: ${data.score.toLocaleString()} (Combo: ${data.combo})`;
+    // 💡 전달받은 ID를 통해 N명 중 누구의 점수인지 찾아서 업데이트합니다.
+    const playerScoreEl = document.getElementById(`score-${data.id}`);
+    if (playerScoreEl) {
+        playerScoreEl.querySelector(".p-score").textContent = data.score.toLocaleString();
+        playerScoreEl.querySelector(".p-combo").textContent = `(x${data.combo})`;
     }
 });
 
 socket.on("opponent_disconnected", () => {
+    // 기존에 작성하셨던 disconnect 처리 로직 유지
     isOpponentGone = true;
-    if (oppInfoEl) {
-        oppInfoEl.style.display = "block";
-        oppInfoEl.textContent = "⚠️ 상대방이 도망갔습니다! (기권승)";
-        oppInfoEl.style.color = "#ff2d78";
-    }
-    if (oppScoreEl) {
-        oppScoreEl.textContent = "OPPONENT: 기권함";
-    }
-    if (state.running) {
-        finishGame(true); // true = 클리어(승리) 판정
-    }
-});
-
-socket.on("start_game", (data) => {
-    // 플레이어가 직접 START 버튼을 누르지 못하게 막음
-    startBtn.disabled = true;
-    document.getElementById("songSelect").disabled = true;
-    messageEl.textContent = "서버 동기화 완료! 3초 후 시작합니다...";
-
-    const serverStartTime = data.serverStartTime;
-    const now = Date.now();
-
-    // 서버가 지정한 시간(3초 뒤)까지 남은 밀리초 계산
-    const timeToWait = serverStartTime - now;
-
-    // 만약 지연율(Ping) 때문에 이미 시간이 지났다면 즉시 시작, 아니면 기다렸다가 시작
-    if (timeToWait <= 0) {
-        startGameLogic();
-    } else {
-        setTimeout(() => {
-            startGameLogic();
-        }, timeToWait);
-    }
+    oppInfoEl.textContent = "⚠️ 상대방이 기권했습니다!";
+    if (state.running) finishGame(true);
 });
 
 // ── 게임 상태 ──────────────────────────────────
@@ -750,6 +874,13 @@ function applyJudge(kind, lane = null) {
             score: state.score,
             combo: state.combo,
         });
+
+        // 내 스코어보드 영역 갱신
+        const myScoreEl = document.getElementById(`score-${socket.id}`);
+        if (myScoreEl) {
+            myScoreEl.querySelector(".p-score").textContent = state.score.toLocaleString();
+            myScoreEl.querySelector(".p-combo").textContent = `(x${state.combo})`;
+        }
     }
 
     // 피버 게이지 업데이트
@@ -1533,19 +1664,54 @@ function showCountdown(count, onDone) {
     step(count);
 }
 
-// ── 게임 시작 ─────────────────────────────────
-async function startGame() {
-    if (isMultiplayer && currentRoom) {
-        messageEl.textContent = "멀티플레이 중입니다. 서버의 신호를 기다려주세요!";
-        return;
+// ── 실제 게임 실행 핵심 로직 (싱글/멀티 공통) ──
+function executeGameRun() {
+    console.log("▶️ 게임 엔진 실행 (executeGameRun)");
+    resetState();
+
+    const delay = 0.5;
+    state.startTime = performance.now() / 1000 + delay;
+
+    if (audioCtx) state.audioStartTime = audioCtx.currentTime + delay;
+    else state.audioStartTime = delay;
+
+    if (audioCtx && state.musicBuffer) {
+        const src = audioCtx.createBufferSource();
+        src.buffer = state.musicBuffer;
+        src.connect(musicGain);
+        src.onended = () => {
+            if (state.running) finishGame(true);
+        };
+        state.musicSource = src;
+        try {
+            src.start(state.audioStartTime);
+        } catch (e) {
+            console.error("Audio API 시작 실패, HTML Audio로 대체합니다.", e);
+            setTimeout(() => {
+                musicAudio.currentTime = 0;
+                musicAudio.play().catch(() => {});
+            }, delay * 1000);
+        }
+    } else {
+        setTimeout(() => {
+            musicAudio.currentTime = 0;
+            musicAudio.play().catch(() => {});
+        }, delay * 1000);
     }
-    // 싱글플레이 시 즉시 시작
-    startGameLogic();
+
+    updateHud();
+    if (messageEl) {
+        messageEl.textContent = isMultiplayer ? "🔥 배틀 시작! 집중하세요!" : "A · S · D  |  HOLD 노트는 꾹 눌러요!";
+    }
+    state.finished = false;
 }
 
-async function startGameLogic() {
+// ── 싱글 플레이 시작 로직 ──
+async function startSinglePlayer() {
+    if (isMultiplayer) return;
+
     hideResultScreen();
-    ensureAudio();
+    unlockAudio();
 
     if (state.musicSource) {
         try {
@@ -1564,56 +1730,35 @@ async function startGameLogic() {
     if (!state.musicReady) preloadMusic();
 
     if (!state.notesReady) {
+        alert("노트 데이터 로딩 중입니다. 잠시 후 다시 눌러주세요.");
         if (!state.notesLoading) loadNotesChart();
         return;
     }
 
-    startBtn.disabled = true;
-    document.getElementById("songSelect").disabled = true;
-    messageEl.textContent = "준비하세요...";
+    // 💡 싱글 플레이에서도 시작을 누르면 혼선을 막기 위해 버튼을 숨깁니다.
+    if (startBtn) startBtn.style.display = "none";
+    const songSel = document.getElementById("songSelect");
+    if (songSel) songSel.disabled = true;
 
     showCountdown(3, () => {
-        resetState();
-
-        const delay = 1.2; // 카운트다운 후 음악 지연
-        state.startTime = performance.now() / 1000 + delay;
-        if (audioCtx) state.audioStartTime = audioCtx.currentTime + delay;
-        else state.audioStartTime = delay;
-
-        if (audioCtx && state.musicBuffer) {
-            const src = audioCtx.createBufferSource();
-            src.buffer = state.musicBuffer;
-            src.connect(musicGain);
-            src.onended = () => {
-                if (state.running) finishGame(true);
-            };
-            state.musicSource = src;
-            try {
-                src.start(state.audioStartTime);
-            } catch {
-                setTimeout(() => {
-                    musicAudio.currentTime = 0;
-                    musicAudio.play().catch(() => {});
-                }, delay * 1000);
-            }
-        } else {
-            setTimeout(() => {
-                musicAudio.currentTime = 0;
-                musicAudio.play().catch(() => {});
-            }, delay * 1000);
-        }
-
-        updateHud();
-        messageEl.textContent = isMultiplayer ? "🔥 배틀 시작!" : "A · S · D  |  HOLD 노트는 꾹 눌러요!";
-        state.finished = false;
+        executeGameRun();
     });
 }
 
 // ── 이벤트 리스너 ─────────────────────────────
-startBtn.addEventListener("click", startGame);
+if (startBtn) startBtn.addEventListener("click", startSinglePlayer);
 document.getElementById("result-restart-btn").addEventListener("click", () => {
     hideResultScreen();
-    startGame();
+    if (!isMultiplayer) {
+        startSinglePlayer();
+    } else {
+        // 방장 시작 버튼 초기화
+        btnStartMulti.disabled = false;
+        btnStartMulti.textContent = "START GAME";
+
+        showScreen(screenLobby);
+        socket.emit("toggle_ready", currentRoom); // 레디 해제 상태로 대기
+    }
 });
 
 const KEY_MAP = { KeyA: 0, KeyS: 1, KeyD: 2 };
