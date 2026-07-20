@@ -19,128 +19,235 @@
         <link rel="stylesheet" href="css/style.css" />
     </head>
     <body>
+        <!-- 백그라운드 별이 보이도록 유지 (불필요시 제거 가능) -->
         <canvas id="star-canvas"></canvas>
 
-        <div id="countdown-overlay">
-            <div id="countdown-num">3</div>
-        </div>
+        <!-- 💡 화면 1: 타이틀 메뉴 -->
+        <div id="screen-title" class="screen-section active">
+            <h1 class="game-title" style="font-size: 48px; margin-bottom: 20px">NEON STRIKE</h1>
+            <p class="subtitle" style="margin-bottom: 40px; font-size: 16px">MULTIPLAYER RHYTHM BATTLE</p>
+            <button class="menu-btn" id="btn-singleplayer">SINGLE PLAYER</button>
+            <button class="menu-btn" id="btn-create-room">CREATE ROOM</button>
 
-        <div id="result-overlay">
-            <div class="result-card">
-                <div class="result-grade" id="result-grade">A</div>
-                <div class="result-title" id="result-title">STAGE CLEAR</div>
-                <div class="judge-counts">
-                    <div class="jc perfect">
-                        <div class="jc-label">PERFECT</div>
-                        <div class="jc-count" id="res-perfect">0</div>
-                    </div>
-                    <div class="jc great">
-                        <div class="jc-label">GREAT</div>
-                        <div class="jc-count" id="res-great">0</div>
-                    </div>
-                    <div class="jc good">
-                        <div class="jc-label">GOOD</div>
-                        <div class="jc-count" id="res-good">0</div>
-                    </div>
-                    <div class="jc miss">
-                        <div class="jc-label">MISS</div>
-                        <div class="jc-count" id="res-miss">0</div>
-                    </div>
-                </div>
-                <div class="result-stats">
-                    <div class="result-stat">
-                        <div class="result-stat-label">SCORE</div>
-                        <div class="result-stat-val" id="res-score">0</div>
-                    </div>
-                    <div class="result-stat">
-                        <div class="result-stat-label">MAX COMBO</div>
-                        <div class="result-stat-val" id="res-combo">0</div>
-                    </div>
-                    <div class="result-stat">
-                        <div class="result-stat-label">ACCURACY</div>
-                        <div class="result-stat-val" id="res-acc">100%</div>
-                    </div>
-                    <div class="result-stat">
-                        <div class="result-stat-label">MULTIPLIER</div>
-                        <div class="result-stat-val" id="res-multi">x1.0</div>
-                    </div>
-                </div>
-                <button class="result-btn" id="result-restart-btn">PLAY AGAIN</button>
+            <div style="margin-top: 20px; display: flex; gap: 10px">
+                <input
+                    type="text"
+                    id="input-room-code"
+                    placeholder="ENTER ROOM CODE"
+                    maxlength="4"
+                    style="
+                        text-align: center;
+                        font-family: &quot;Orbitron&quot;;
+                        font-size: 16px;
+                        padding: 10px;
+                        border-radius: 8px;
+                        border: 1px solid #00f5ff;
+                        background: rgba(0, 20, 60, 0.6);
+                        color: white;
+                    "
+                />
+                <button class="menu-btn" id="btn-join-room" style="padding: 10px 20px">JOIN</button>
             </div>
         </div>
 
-        <div class="title-bar">
-            <div>
-                <div class="game-title">NEON STRIKE</div>
-                <div class="subtitle">3-LANE RHYTHM GAME</div>
-                <div id="opponent-info" style="color: #ff2d78; font-size: 12px; margin-top: 4px; display: none">
-                    상대방 대기 중...
+        <!-- 💡 화면 2: 대기실 (로비) -->
+        <div id="screen-lobby" class="screen-section">
+            <h2 class="game-title" style="font-size: 32px; margin-bottom: 10px">LOBBY</h2>
+            <div style="font-size: 24px; color: #ffd700; margin-bottom: 30px; font-family: &quot;Orbitron&quot;">
+                ROOM CODE: <span id="display-room-code" style="letter-spacing: 0.2em; font-weight: 900">----</span>
+            </div>
+
+            <div
+                id="lobby-players"
+                style="
+                    background: rgba(0, 15, 40, 0.85);
+                    border: 1px solid #00f5ff;
+                    border-radius: 8px;
+                    padding: 20px;
+                    width: 100%;
+                    max-width: 400px;
+                    margin-bottom: 20px;
+                "
+            >
+                <!-- 플레이어 목록이 여기에 동적으로 추가됨 -->
+            </div>
+
+            <div
+                id="ready-status"
+                style="color: #00f5ff; margin-bottom: 20px; font-family: &quot;Orbitron&quot;; font-size: 18px"
+            >
+                0/2 PLAYERS READY
+            </div>
+
+            <button class="menu-btn" id="btn-ready">READY</button>
+            <button
+                class="menu-btn"
+                id="btn-start-multi"
+                style="
+                    display: none;
+                    background: linear-gradient(135deg, rgba(255, 45, 120, 0.4), rgba(180, 77, 255, 0.5));
+                "
+            >
+                START GAME
+            </button>
+        </div>
+
+        <div id="screen-game" class="screen-section">
+            <div id="countdown-overlay">
+                <div id="countdown-num">3</div>
+            </div>
+
+            <div id="result-overlay">
+                <div class="result-card">
+                    <div class="result-grade" id="result-grade">A</div>
+                    <div class="result-title" id="result-title">STAGE CLEAR</div>
+                    <div class="judge-counts">
+                        <div class="jc perfect">
+                            <div class="jc-label">PERFECT</div>
+                            <div class="jc-count" id="res-perfect">0</div>
+                        </div>
+                        <div class="jc great">
+                            <div class="jc-label">GREAT</div>
+                            <div class="jc-count" id="res-great">0</div>
+                        </div>
+                        <div class="jc good">
+                            <div class="jc-label">GOOD</div>
+                            <div class="jc-count" id="res-good">0</div>
+                        </div>
+                        <div class="jc miss">
+                            <div class="jc-label">MISS</div>
+                            <div class="jc-count" id="res-miss">0</div>
+                        </div>
+                    </div>
+                    <div class="result-stats">
+                        <div class="result-stat">
+                            <div class="result-stat-label">SCORE</div>
+                            <div class="result-stat-val" id="res-score">0</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-label">MAX COMBO</div>
+                            <div class="result-stat-val" id="res-combo">0</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-label">ACCURACY</div>
+                            <div class="result-stat-val" id="res-acc">100%</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-label">MULTIPLIER</div>
+                            <div class="result-stat-val" id="res-multi">x1.0</div>
+                        </div>
+                    </div>
+                    <button class="result-btn" id="result-restart-btn">PLAY AGAIN</button>
                 </div>
             </div>
-            <div style="text-align: right; font-size: 11px; color: rgba(100, 180, 255, 0.5); letter-spacing: 0.08em">
-                <span
-                    id="opponent-score-display"
-                    style="display: none; color: #ffd700; margin-right: 10px; font-size: 14px; font-weight: bold"
-                    >OPPONENT: 0</span
+
+            <div class="title-bar">
+                <div>
+                    <div class="game-title">NEON STRIKE</div>
+                    <div class="subtitle">3-LANE RHYTHM GAME</div>
+                    <div id="opponent-info" style="color: #ff2d78; font-size: 12px; margin-top: 4px; display: none">
+                        상대방 대기 중...
+                    </div>
+                </div>
+                <div
+                    style="text-align: right; font-size: 11px; color: rgba(100, 180, 255, 0.5); letter-spacing: 0.08em"
                 >
-                A&nbsp;·&nbsp;S&nbsp;·&nbsp;D&nbsp;&nbsp;|&nbsp;&nbsp;TAP
+                    A&nbsp;·&nbsp;S&nbsp;·&nbsp;D&nbsp;&nbsp;|&nbsp;&nbsp;TAP
+                </div>
             </div>
-        </div>
 
-        <section class="hud">
-            <div class="hud-cell">
-                <div class="hud-label">BPM</div>
-                <div class="hud-value" id="bpm">142</div>
+            <div
+                id="multiplayer-scoreboard"
+                style="
+                    display: none;
+                    position: absolute;
+                    top: 70px;
+                    right: 20px;
+                    background: rgba(0, 15, 40, 0.85);
+                    border: 1px solid #b44dff;
+                    border-radius: 8px;
+                    padding: 12px;
+                    width: 200px;
+                    z-index: 100;
+                    box-shadow: 0 0 15px rgba(180, 77, 255, 0.4);
+                "
+            >
+                <div
+                    style="
+                        font-family: &quot;Orbitron&quot;;
+                        font-size: 12px;
+                        color: #b44dff;
+                        letter-spacing: 0.1em;
+                        margin-bottom: 8px;
+                        border-bottom: 1px solid rgba(180, 77, 255, 0.4);
+                        padding-bottom: 4px;
+                    "
+                >
+                    LIVE SCORE
+                </div>
+                <ul
+                    id="scoreboard-list"
+                    style="list-style: none; padding: 0; margin: 0; font-family: &quot;Rajdhani&quot;"
+                >
+                    <!-- 자바스크립트를 통해 N명의 플레이어 점수가 여기에 동적으로 들어갑니다 -->
+                </ul>
             </div>
-            <div class="hud-cell">
-                <div class="hud-label">COMBO</div>
-                <div class="hud-value" id="combo">0</div>
-            </div>
-            <div class="hud-cell">
-                <div class="hud-label">SCORE</div>
-                <div class="hud-value" id="score">0</div>
-            </div>
-            <div class="hud-cell">
-                <div class="hud-label">ACCURACY</div>
-                <div class="hud-value" id="accuracy">100%</div>
-            </div>
-            <div class="hud-cell">
-                <div class="hud-label">LIFE</div>
-                <div class="hud-value" id="life">100</div>
-            </div>
-        </section>
 
-        <div class="song-select-wrap">
-            <span class="song-select-label">TRACK</span>
-            <select id="songSelect">
-                <option value="0">🎵 Original Track — Neon Strike (BPM 142)</option>
-                <option value="1">⚡ ELECTRO PULSE — High Energy (BPM 160)</option>
-                <option value="2">🌙 MIDNIGHT DRIFT — Chill Wave (BPM 95)</option>
-                <option value="3">🔥 INFERNO RUSH — Hard Mode (BPM 185)</option>
-            </select>
-        </div>
+            <section class="hud">
+                <div class="hud-cell">
+                    <div class="hud-label">BPM</div>
+                    <div class="hud-value" id="bpm">142</div>
+                </div>
+                <div class="hud-cell">
+                    <div class="hud-label">COMBO</div>
+                    <div class="hud-value" id="combo">0</div>
+                </div>
+                <div class="hud-cell">
+                    <div class="hud-label">SCORE</div>
+                    <div class="hud-value" id="score">0</div>
+                </div>
+                <div class="hud-cell">
+                    <div class="hud-label">ACCURACY</div>
+                    <div class="hud-value" id="accuracy">100%</div>
+                </div>
+                <div class="hud-cell">
+                    <div class="hud-label">LIFE</div>
+                    <div class="hud-value" id="life">100</div>
+                </div>
+            </section>
 
-        <div id="fever-bar-wrap">
-            <span class="fever-label">FEVER</span>
-            <div id="fever-bar-bg"><div id="fever-bar-fill"></div></div>
-            <span id="fever-active-label">🔥 FEVER!</span>
-        </div>
-
-        <div class="game-wrap">
-            <canvas id="stage" width="736" height="520"></canvas>
-        </div>
-
-        <section class="controls">
-            <button id="startBtn" class="start-btn">▶ START</button>
-            <div class="key-guide">
-                <span id="keyA" class="key-cap">A</span>
-                <span id="keyS" class="key-cap">S</span>
-                <span id="keyD" class="key-cap">D</span>
+            <div class="song-select-wrap">
+                <span class="song-select-label">TRACK</span>
+                <select id="songSelect">
+                    <option value="0">🎵 Original Track — Neon Strike (BPM 142)</option>
+                    <option value="1">⚡ ELECTRO PULSE — High Energy (BPM 160)</option>
+                    <option value="2">🌙 MIDNIGHT DRIFT — Chill Wave (BPM 95)</option>
+                    <option value="3">🔥 INFERNO RUSH — Hard Mode (BPM 185)</option>
+                </select>
             </div>
-        </section>
 
-        <div class="message-bar">
-            <p id="message">START를 누르거나 터치해서 시작하세요.</p>
+            <div id="fever-bar-wrap">
+                <span class="fever-label">FEVER</span>
+                <div id="fever-bar-bg"><div id="fever-bar-fill"></div></div>
+                <span id="fever-active-label">🔥 FEVER!</span>
+            </div>
+
+            <div class="game-wrap">
+                <canvas id="stage" width="736" height="520"></canvas>
+            </div>
+
+            <section class="controls">
+                <button id="startBtn" class="start-btn">▶ START</button>
+                <div class="key-guide">
+                    <span id="keyA" class="key-cap">A</span>
+                    <span id="keyS" class="key-cap">S</span>
+                    <span id="keyD" class="key-cap">D</span>
+                </div>
+            </section>
+
+            <div class="message-bar">
+                <p id="message">START를 누르거나 터치해서 시작하세요.</p>
+            </div>
         </div>
 
         <script src="/socket.io/socket.io.js"></script>
