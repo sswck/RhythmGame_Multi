@@ -19,7 +19,7 @@
 
 body {
     min-height: 100vh;
-    background: url("../assets/background.png") no-repeat center center fixed;
+    background: url("../assets/neonbg.jpg") no-repeat center center fixed;
     background-size: cover;
     background-color: var(--bg-deep);
     font-family: "Rajdhani", "Apple SD Gothic Neo", sans-serif;
@@ -29,6 +29,137 @@ body {
     align-items: center;
     justify-content: flex-start;
     overflow-x: hidden;
+}
+
+.bg-vignette {
+
+    position:fixed;
+
+    inset:0;
+
+    z-index:-1;
+
+    pointer-events:none;
+
+
+    background:
+    radial-gradient(
+        ellipse at center,
+        transparent 35%,
+        rgba(0,0,0,0.25) 60%,
+        rgba(0,0,0,0.8) 100%
+    );
+
+}
+
+.bg-glitch {
+
+    position:fixed;
+
+    inset:0;
+
+    background:
+    url("../assets/neonbg.jpg")
+    center/cover no-repeat;
+
+    z-index:-1;
+
+
+}
+
+.bg-glitch::before,
+.bg-glitch::after {
+
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    background:inherit;
+
+}
+
+
+.bg-glitch::before {
+
+    filter:
+    hue-rotate(180deg);
+
+    opacity:0.15;
+
+    animation:
+    bgRGB 4s infinite;
+
+}
+
+
+.bg-glitch::after {
+
+    filter:
+    hue-rotate(-90deg);
+
+    opacity:0.15;
+
+    animation:
+    bgRGB2 5s infinite;
+
+}
+
+
+
+@keyframes bgRGB {
+
+
+    0%,90%,100% {
+
+        transform:none;
+
+    }
+
+
+    92% {
+
+        transform:
+        translateX(-8px);
+
+    }
+
+
+    94% {
+
+        transform:
+        translateX(5px);
+
+    }
+
+}
+
+@keyframes bgRGB2 {
+
+
+    0%,85%,100% {
+
+        transform:none;
+
+    }
+
+
+    88% {
+
+        transform:
+        translateX(6px);
+
+    }
+
+
+    92% {
+
+        transform:
+        translateX(-4px);
+
+    }
+
 }
 
 /* ── 별 배경 ── */
@@ -62,30 +193,65 @@ body::after {
 .subtitle,
 .menu-btn,
 .room-input {
-
     position:relative;
-
     z-index:20;
-
 }
 
 /* ===========================
    TITLE CONTENT
 =========================== */
 
-
 .title-content {
-
     position:relative;
-
     z-index:10;
-
     display:flex;
-
     flex-direction:column;
-
     align-items:center;
+    transform: translateY(30px);
+    animation: menuReveal 0.8s ease forwards;
+}
 
+/* 타이틀 */
+.title-content > .game-title {
+    animation-delay: 0.2s;
+}
+
+/* 서브 타이틀 */
+.title-content > .subtitle {
+    animation-delay: 0.5s;
+}
+
+/* 첫 번째 버튼 */
+.title-content > .menu-btn:nth-of-type(1) {
+    animation-delay: 0.8s;
+}
+
+/* 두 번째 버튼 */
+.title-content > .menu-btn:nth-of-type(2) {
+    animation-delay: 1.0s;
+}
+
+/* 방 코드 입력창 */
+.title-content > .room-input {
+    animation-delay: 1.2s;
+}
+
+@keyframes menuReveal {
+    0% {
+        opacity:0;
+        transform:
+        translateY(30px)
+        scale(0.95);
+        filter:blur(6px);
+    }
+
+    100% {
+        opacity:1;
+        transform:
+        translateY(0)
+        scale(1);
+        filter:blur(0);
+    }
 }
 
 /* ── 타이틀 바 ── */
@@ -112,6 +278,7 @@ body::after {
     background-clip: text;
     text-shadow:none;
     margin-bottom: 0px;
+    animation-delay: 0.5s;
 }
 
 /* 사이버펑크 글리치 타이틀 텍스트 효과 */
@@ -739,7 +906,10 @@ body::after {
         grid-template-columns: repeat(3, 1fr);
     }
     .game-title {
-        font-size: 16px;
+        font-size: 42px;
+    }
+    .subtitle {
+        font-size: 18px;
     }
     .result-grade {
         font-size: 56px;
@@ -930,54 +1100,68 @@ body::after {
 }
 
 .room-input {
-    margin-top:20px;
     display:flex;
-    gap:10px;
+    align-items:flex-end;
+    justify-content:center;
+    gap:16px;
+    margin-top:28px;
 }
 
+.room-code-box{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:flex-start;
+
+}
+
+.room-label{
+    font-family:"Orbitron";
+    font-size:12px;
+    font-weight: 600;
+    letter-spacing:.25em;
+    color:#ffffff;
+    margin-bottom:8px;
+    text-shadow:0 0 8px #00f5ff;
+}
 
 #input-room-code {
-    width:180px;
-    height:48px;
+    width:280px;
+    height: 60px;
+    padding: 0 20px;
+    border-radius:8px;
+    border:1px solid #00f5ff;
+    background:rgba(0,20,60,0.6);
+    color:white;
+    text-align:center;
+    font-family:"Orbitron";
+    font-weight:600;
+    font-size:24px;
+    letter-spacing:.45em;
+    text-transform:uppercase;
+    outline:none;
+    transition:.2s;
+
 }
 
+#input-room-code:focus{
+    border-color:#00f5ff;
+    box-shadow:
+        0 0 12px rgba(0,245,255,.6),
+        inset 0 0 8px rgba(0,245,255,.25);
+}
+
+#input-room-code::placeholder {
+    color:rgba(0,245,255,.55);
+    letter-spacing:.12em;
+}
 
 #btn-join-room {
     width:auto;
     max-width:none;
     margin:0;
-}
-
-
-#input-room-code {
-
-    text-align:center;
-
-    font-family:"Orbitron";
-
-    font-weight:600;
-
-    font-size:16px;
-
-    padding:10px;
-
-    width:180px;
-
-    border-radius:8px;
-
-    border:1px solid #00f5ff;
-
-    background:rgba(0,20,60,0.6);
-
-    color:white;
-
-}
-
-
-#input-room-code::placeholder {
-
-    color:rgba(0,245,255,0.8);
-
 }
 
 .player-item {

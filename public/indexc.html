@@ -20,6 +20,8 @@
         <link rel="stylesheet" href="css/character.css" />
     </head>
     <body>
+        <div class="bg-glitch"></div>
+        <div class="bg-vignette"></div>
         <!-- 백그라운드 별이 보이도록 유지 (불필요시 제거 가능) -->
         <canvas id="star-canvas"></canvas>
 
@@ -64,18 +66,25 @@
         </button>
 
         <div class="room-input">
-            <input 
-                type="text"
-                id="input-room-code"
-                placeholder="ENTER ROOM CODE"
-                maxlength="4"
-            >
-            <button 
-                class="menu-btn"
-                id="btn-join-room"
-            >
-                JOIN
-            </button>
+            <div class="room-code-box">
+            <span class="room-label">
+                ROOM CODE
+            </span>
+
+        <input
+            type="text"
+            id="input-room-code"
+            placeholder="X X X X"
+            maxlength="4"
+        >
+        </div>
+
+        <button
+            class="menu-btn"
+            id="btn-join-room"
+        >
+            JOIN
+        </button>
         </div>
     </div>
 </div>
