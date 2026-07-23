@@ -1,0 +1,248 @@
+/* =================================
+   CHARACTER LAYER
+   Cyberpunk Character Effect
+================================= */
+
+
+/* 캐릭터 위치 */
+
+.character-layer {
+
+    position:absolute;
+
+    right:10%;
+
+    bottom:0;
+
+    z-index:3;
+
+    pointer-events:none;
+
+}
+
+
+
+/* 캐릭터 이미지 */
+
+.character-img {
+
+
+    height:75vh;
+
+    max-height:850px;
+
+    object-fit:contain;
+
+
+    filter:
+
+    drop-shadow(0 0 15px #00f5ff)
+
+    drop-shadow(
+        0 0 40px rgba(0,245,255,0.5)
+    );
+
+
+    animation:
+
+    characterFloat
+    4s ease-in-out infinite;
+
+
+}
+
+
+
+/* 네온 빛 */
+
+.character-glow {
+
+
+    position:absolute;
+
+    width:400px;
+
+    height:400px;
+
+
+    background:
+
+    radial-gradient(
+
+        circle,
+
+        rgba(0,245,255,0.35),
+
+        transparent 70%
+
+    );
+
+
+    filter:blur(30px);
+
+
+    top:20%;
+
+    left:20%;
+
+
+    animation:
+
+    glowPulse
+    3s infinite alternate;
+
+
+}
+
+
+
+/* UI 위에 올라오는 효과 */
+
+.game-title,
+.subtitle,
+.menu-btn,
+.room-input {
+
+    position:relative;
+
+    z-index:20;
+
+}
+
+
+
+/* 캐릭터 기본 움직임 */
+
+@keyframes characterFloat {
+
+
+    0% {
+
+        transform:translateY(0);
+
+    }
+
+
+    50% {
+
+        transform:translateY(-15px);
+
+    }
+
+
+    100% {
+
+        transform:translateY(0);
+
+    }
+
+}
+
+
+
+/* 빛 펄스 */
+
+@keyframes glowPulse {
+
+
+    from {
+
+        opacity:0.5;
+
+        transform:scale(0.9);
+
+    }
+
+
+    to {
+
+        opacity:1;
+
+        transform:scale(1.1);
+
+    }
+
+}
+
+
+
+/* 등장 애니메이션 */
+
+.character-enter {
+
+
+    animation:
+
+    characterAppear
+    0.8s ease forwards;
+
+
+}
+
+
+
+@keyframes characterAppear {
+
+
+    from {
+
+        opacity:0;
+
+        transform:
+        translateX(80px);
+
+    }
+
+
+    to {
+
+        opacity:1;
+
+        transform:
+        translateX(0);
+
+    }
+
+}
+
+
+
+/* 버튼 접근 시 */
+
+.character-active {
+
+
+    filter:
+
+    drop-shadow(0 0 25px #ff2d78)
+
+    drop-shadow(
+        0 0 60px rgba(255,45,120,0.6)
+    );
+
+
+}
+
+
+
+/* 모바일 */
+
+@media(max-width:768px){
+
+
+    .character-layer {
+
+        right:-20%;
+
+    }
+
+
+
+    .character-img {
+
+        height:55vh;
+
+    }
+
+
+}

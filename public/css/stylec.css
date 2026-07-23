@@ -19,7 +19,7 @@
 
 body {
     min-height: 100vh;
-    background: url("../assets/S_1.png") no-repeat center center fixed;
+    background: url("../assets/background.png") no-repeat center center fixed;
     background-size: cover;
     background-color: var(--bg-deep);
     font-family: "Rajdhani", "Apple SD Gothic Neo", sans-serif;
@@ -56,6 +56,36 @@ body::after {
     );
     pointer-events: none;
     z-index: 999;
+}
+
+.game-title,
+.subtitle,
+.menu-btn,
+.room-input {
+
+    position:relative;
+
+    z-index:20;
+
+}
+
+/* ===========================
+   TITLE CONTENT
+=========================== */
+
+
+.title-content {
+
+    position:relative;
+
+    z-index:10;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
 }
 
 /* ── 타이틀 바 ── */
@@ -897,6 +927,57 @@ body::after {
 
 .menu-btn:active {
     transform: translateY(1px);
+}
+
+.room-input {
+    margin-top:20px;
+    display:flex;
+    gap:10px;
+}
+
+
+#input-room-code {
+    width:180px;
+    height:48px;
+}
+
+
+#btn-join-room {
+    width:auto;
+    max-width:none;
+    margin:0;
+}
+
+
+#input-room-code {
+
+    text-align:center;
+
+    font-family:"Orbitron";
+
+    font-weight:600;
+
+    font-size:16px;
+
+    padding:10px;
+
+    width:180px;
+
+    border-radius:8px;
+
+    border:1px solid #00f5ff;
+
+    background:rgba(0,20,60,0.6);
+
+    color:white;
+
+}
+
+
+#input-room-code::placeholder {
+
+    color:rgba(0,245,255,0.8);
+
 }
 
 .player-item {

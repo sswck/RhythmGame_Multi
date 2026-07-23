@@ -16,39 +16,69 @@
             rel="stylesheet"
         />
 
-        <link rel="stylesheet" href="css/style.css" />
+        <link rel="stylesheet" href="css/stylec.css" />
+        <link rel="stylesheet" href="css/character.css" />
     </head>
     <body>
         <!-- 백그라운드 별이 보이도록 유지 (불필요시 제거 가능) -->
         <canvas id="star-canvas"></canvas>
 
         <!-- 💡 화면 1: 타이틀 메뉴 -->
-        <div id="screen-title" class="screen-section active">
-            <div class="game-title glitch" data-text="NEON STRIKE">NEON STRIKE</div>
-            <p class="subtitle">MULTIPLAYER RHYTHM BATTLE</p>
-            <button class="menu-btn" id="btn-singleplayer">SINGLE PLAYER</button>
-            <button class="menu-btn" id="btn-create-room">CREATE ROOM</button>
+    <div id="screen-title" class="screen-section active">
 
-            <div style="margin-top: 20px; display: flex; gap: 10px">
-                <input type="text"
-                    id="input-room-code"
-                    placeholder="ENTER ROOM CODE"
-                    maxlength="4"
-                    style="
-                        text-align: center;
-                        font-family: 'Orbitron';
-                        font-weight: 600;
-                        font-size: 16px;
-                        padding: 10px;
-                        border-radius: 8px;
-                        border: 1px solid #00f5ff;
-                        background: rgba(0, 20, 60, 0.6);
-                        color: white;
-                    "
-                />
-                <button class="menu-btn" id="btn-join-room" style="padding: 10px 20px">JOIN</button>
-            </div>
+    <!-- 캐릭터 레이어 -->
+    <div class="character-layer">
+        <div class="character-glow"></div>
+        <img 
+            src="assets/S_1.png"
+            class="character-img"
+            alt="character"
+        >
+    </div>
+
+    <!-- UI 영역 -->
+    <div class="title-content">
+        <h1 
+            class="game-title glitch"
+            data-text="NEON STRIKE"
+        >
+            NEON STRIKE
+        </h1>
+
+        <p class="subtitle">
+            MULTIPLAYER RHYTHM BATTLE
+        </p>
+
+        <button 
+            class="menu-btn"
+            id="btn-singleplayer"
+        >
+            SINGLE PLAYER
+        </button>
+
+        <button 
+            class="menu-btn"
+            id="btn-create-room"
+        >
+            CREATE ROOM
+        </button>
+
+        <div class="room-input">
+            <input 
+                type="text"
+                id="input-room-code"
+                placeholder="ENTER ROOM CODE"
+                maxlength="4"
+            >
+            <button 
+                class="menu-btn"
+                id="btn-join-room"
+            >
+                JOIN
+            </button>
         </div>
+    </div>
+</div>
 
         <!-- 💡 화면 2: 대기실 (로비) -->
         <div id="screen-lobby" class="screen-section">
@@ -251,7 +281,8 @@
 
         <script src="/socket.io/socket.io.js"></script>
         <script src="js/notes.js"></script>
-        <script src="js/game.js"></script>
         <script src="js/glitch.js"></script>
+        <script src="js/character.js"></script>
+        <script src="js/game.js"></script>
     </body>
 </html>
