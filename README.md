@@ -58,7 +58,25 @@ NEON STRIKE는 라이브 서비스 확장 시 다음과 같은 부분 유료화(
 프로젝트를 로컬 환경에서 실행하려면 Node.js가 설치되어 있어야 합니다.
 
 1. **저장소 클론 (Clone Repository)**
+
     ```bash
     git clone [레포지토리 URL]
     cd neon-strike
     ```
+
+2. **종속성 패키지 설치 (Install Dependencies)**
+
+    ```bash
+    npm install
+    ```
+
+3. **게임 서버 실행 (Run Server)**
+
+    ```bash
+    npm start
+    # 또는 node server.js
+    ```
+
+4. **게임 접속 (Play)**
+    - 인터넷 브라우저를 열고 http://localhost:3000에 접속합니다.
+    - 로컬 네트워크 멀티플레이 테스트 시, 다른 기기에서 http://[서버PC의_내부IP]:3000으로 접속하여 즐길 수 있습니다.
